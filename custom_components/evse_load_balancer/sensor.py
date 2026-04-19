@@ -76,6 +76,54 @@ SENSORS: tuple[tuple[SensorEntity, SensorEntityDescription], ...] = (
         ),
     ),
     (
+        LoadBalancerSensor,
+        SensorEntityDescription(
+            key=get_callable_name(EVSELoadBalancerCoordinator.get_overcurrent_mode),
+            translation_key="evse_overcurrent_mode",
+            entity_registry_enabled_default=False,
+        ),
+    ),
+    (
+        LoadBalancerSensor,
+        SensorEntityDescription(
+            key=get_callable_name(EVSELoadBalancerCoordinator.get_trip_risk_threshold),
+            translation_key="evse_trip_risk_threshold",
+            entity_registry_enabled_default=False,
+        ),
+    ),
+    (
+        LoadBalancerSensor,
+        SensorEntityDescription(
+            key=get_callable_name(EVSELoadBalancerCoordinator.get_cumulative_trip_risk),
+            translation_key="evse_cumulative_trip_risk",
+            entity_registry_enabled_default=False,
+        ),
+    ),
+    (
+        LoadBalancerSensor,
+        SensorEntityDescription(
+            key=get_callable_name(EVSELoadBalancerCoordinator.get_last_calculated_currents),
+            translation_key="evse_last_calculated_currents",
+            entity_registry_enabled_default=False,
+        ),
+    ),
+    (
+        LoadBalancerSensor,
+        SensorEntityDescription(
+            key=get_callable_name(EVSELoadBalancerCoordinator.get_last_applied_currents),
+            translation_key="evse_last_applied_currents",
+            entity_registry_enabled_default=False,
+        ),
+    ),
+    (
+        LoadBalancerSensor,
+        SensorEntityDescription(
+            key=get_callable_name(EVSELoadBalancerCoordinator.get_manual_override_detected),
+            translation_key="evse_manual_override_detected",
+            entity_registry_enabled_default=False,
+        ),
+    ),
+    (
         LoadBalancerPhaseSensor,
         SensorEntityDescription(
             key=SENSOR_KEY_AVAILABLE_CURRENT_L1,

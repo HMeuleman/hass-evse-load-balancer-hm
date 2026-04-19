@@ -212,6 +212,53 @@ class EVSELoadBalancerCoordinator:
         # For now, return a placeholder; can be enhanced to track from meter
         return "DSMR Current/Power/Voltage Fallback"
 
+    @property
+    def get_overcurrent_mode(self) -> str:
+        """Get the overcurrent mode (conservative or optimised)."""
+        return self._balancer_algo._phase_monitors[Phase.L1]._overcurrent_mode.value
+
+    @property
+    def get_trip_risk_threshold(self) -> int:
+        """Get the trip risk threshold for the balancer."""
+        return self._balancer_algo._phase_monitors[Phase.L1]._trip_risk_threshold
+
+    @property
+    def get_cumulative_trip_risk(self) -> str:
+        """Get cumulative trip risk for all phases as a formatted string."""
+        risks = {}
+        for phase in self._available_phases:
+            risk = self._balancer_algo._phase_monitors[phase]._cumulative_trip_risk
+            risks[phase.value] = f"{risk:.1f}"
+        return str(risks)
+
+    @property
+    def get_last_calculated_currents(self) -> str:
+        """Get the last calculated currents from the power allocator."""
+        if not self._charger or self._charger.id not in self._power_allocator._chargers:
+            return "Unknown"
+        state = self._power_allocator._chargers[self._charger.id]
+        if state.last_calculated_current:
+            return str(state.last_calculated_current)
+        return "Not yet calculated"
+
+    @property
+    def get_last_applied_currents(self) -> str:
+        """Get the last applied currents from the power allocator."""
+        if not self._charger or self._charger.id not in self._power_allocator._chargers:
+            return "Unknown"
+        state = self._power_allocator._chargers[self._charger.id]
+        if state.last_applied_current:
+            return str(state.last_applied_current)
+        return "Not yet applied"
+
+    @property
+    def get_manual_override_detected(self) -> str:
+        """Check if a manual override was detected."""
+        if not self._charger or self._charger.id not in self._power_allocator._chargers:
+            return "Unknown"
+        state = self._power_allocator._chargers[self._charger.id]
+        return "Yes" if state.manual_override_detected else "No"
+
     @callback
     def _execute_update_cycle(self, now: datetime) -> None:
         """Execute the main update cycle for load balancing."""

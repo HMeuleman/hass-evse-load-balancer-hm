@@ -72,6 +72,24 @@
             "evse_current_input_method": {
                 "name": "Current input method"
             },
+            "evse_overcurrent_mode": {
+                "name": "Overcurrent mode"
+            },
+            "evse_trip_risk_threshold": {
+                "name": "Trip risk threshold"
+            },
+            "evse_cumulative_trip_risk": {
+                "name": "Cumulative trip risk per phase"
+            },
+            "evse_last_calculated_currents": {
+                "name": "Last calculated currents"
+            },
+            "evse_last_applied_currents": {
+                "name": "Last applied currents"
+            },
+            "evse_manual_override_detected": {
+                "name": "Manual override detected"
+            },
             "evse_available_current_l1": {
                 "name": "Available current L1"
             },
