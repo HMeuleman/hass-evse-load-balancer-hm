@@ -117,14 +117,32 @@ class HaDevice:
         self, entity_translation_key: str, parser_fn: Callable | None = None
     ) -> Any | None:
         """Get the state of the entity for a given translation key."""
-        entity_id = self._get_entity_id_by_translation_key(entity_translation_key)
+        try:
+            entity_id = self._get_entity_id_by_translation_key(
+                entity_translation_key
+            )
+        except ValueError:
+            _LOGGER.warning(
+                "Entity not found for translation_key '%s'",
+                entity_translation_key,
+            )
+            return None
         return self._get_entity_state(entity_id, parser_fn)
 
     def _get_entity_state_attrs_by_translation_key(
         self, entity_translation_key: str
     ) -> dict | None:
         """Get the state attributes for the entity for a given translation key."""
-        entity_id = self._get_entity_id_by_translation_key(entity_translation_key)
+        try:
+            entity_id = self._get_entity_id_by_translation_key(
+                entity_translation_key
+            )
+        except ValueError:
+            _LOGGER.warning(
+                "Entity not found for translation_key '%s'",
+                entity_translation_key,
+            )
+            return None
         return self._get_entity_state_attrs(entity_id)
 
     def _get_entity_state_by_unique_id(

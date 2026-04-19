@@ -54,7 +54,10 @@ class DsmrMeter(Meter, HaDevice):
             phase, cf.CONF_PHASE_SENSOR_VOLTAGE
         )
 
-        if None in [active_power, voltage_state]:
+        if voltage_state is None:
+            voltage_state = 230
+
+        if active_power is None:
             _LOGGER.warning(
                 (
                     "Missing states for one of phase %s: active_power: %s, ",
@@ -112,8 +115,8 @@ class DsmrMeter(Meter, HaDevice):
         self, phase: Phase, sensor_const: str
     ) -> float | None:
         """Get the state of the entity for a given phase and translation key."""
-        entity_id = self._get_entity_id_for_phase_sensor(phase, sensor_const)
-        return self._get_entity_state(entity_id, float)
+        entity_translation_key = self._get_entity_map_for_phase(phase)[sensor_const]
+        return self._get_entity_state_by_translation_key(entity_translation_key, float)
 
     def _get_entity_map_for_phase(self, phase: Phase) -> dict:
         entity_map = {}
