@@ -22,16 +22,19 @@ ENTITY_REGISTRATION_MAP: dict[str, dict[str, str]] = {
         cf.CONF_PHASE_SENSOR_PRODUCTION: "instantaneous_active_power_l1_negative",
         cf.CONF_PHASE_SENSOR_CONSUMPTION: "instantaneous_active_power_l1_positive",
         cf.CONF_PHASE_SENSOR_VOLTAGE: "instantaneous_voltage_l1",
+        cf.CONF_PHASE_SENSOR_CURRENT: "instantaneous_current_l1",
     },
     cf.CONF_PHASE_KEY_TWO: {
         cf.CONF_PHASE_SENSOR_PRODUCTION: "instantaneous_active_power_l2_negative",
         cf.CONF_PHASE_SENSOR_CONSUMPTION: "instantaneous_active_power_l2_positive",
         cf.CONF_PHASE_SENSOR_VOLTAGE: "instantaneous_voltage_l2",
+        cf.CONF_PHASE_SENSOR_CURRENT: "instantaneous_current_l2",
     },
     cf.CONF_PHASE_KEY_THREE: {
         cf.CONF_PHASE_SENSOR_PRODUCTION: "instantaneous_active_power_l3_negative",
         cf.CONF_PHASE_SENSOR_CONSUMPTION: "instantaneous_active_power_l3_positive",
         cf.CONF_PHASE_SENSOR_VOLTAGE: "instantaneous_voltage_l3",
+        cf.CONF_PHASE_SENSOR_CURRENT: "instantaneous_current_l3",
     },
 }
 
@@ -49,6 +52,13 @@ class DsmrMeter(Meter, HaDevice):
 
     def get_active_phase_current(self, phase: Phase) -> int | None:
         """Return the active current on a given phase."""
+        current_state = self._get_entity_state_for_phase_sensor(
+            phase, cf.CONF_PHASE_SENSOR_CURRENT
+        )
+
+        if current_state is not None:
+            return floor(current_state) if current_state else None
+
         active_power = self.get_active_phase_power(phase)
         voltage_state = self._get_entity_state_for_phase_sensor(
             phase, cf.CONF_PHASE_SENSOR_VOLTAGE
@@ -80,15 +90,31 @@ class DsmrMeter(Meter, HaDevice):
             phase, cf.CONF_PHASE_SENSOR_PRODUCTION
         )
 
-        if None in [consumption_state, production_state]:
+        if consumption_state is not None and production_state is not None:
+            return consumption_state - production_state
+
+        current_state = self._get_entity_state_for_phase_sensor(
+            phase, cf.CONF_PHASE_SENSOR_CURRENT
+        )
+        voltage_state = self._get_entity_state_for_phase_sensor(
+            phase, cf.CONF_PHASE_SENSOR_VOLTAGE
+        )
+
+        if current_state is None or voltage_state is None:
             _LOGGER.warning(
-                "Missing states for one of phase %s: consumption: %s, production: %s",
+                (
+                    "Missing state for one of phase %s: consumption: %s, ",
+                    "production: %s, current: %s, voltage: %s.",
+                ),
                 phase,
                 consumption_state,
                 production_state,
+                current_state,
+                voltage_state,
             )
             return None
-        return consumption_state - production_state
+
+        return current_state * voltage_state / 1000.0
 
     def get_tracking_entities(self) -> list[str]:
         """Return a list of entity IDs that should be tracked for this meter."""
