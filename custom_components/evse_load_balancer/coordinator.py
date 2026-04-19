@@ -202,7 +202,7 @@ class EVSELoadBalancerCoordinator:
     def get_current_charger_limits(self) -> str:
         """Get the current charger limits as a string."""
         limits = self._charger.get_current_limit()
-        if limits:
+        if limits is not None:
             return str(limits)
         return "Unknown"
 
@@ -237,7 +237,7 @@ class EVSELoadBalancerCoordinator:
         if not self._charger or self._charger.id not in self._power_allocator._chargers:
             return "Unknown"
         state = self._power_allocator._chargers[self._charger.id]
-        if state.last_calculated_current:
+        if state.last_calculated_current is not None:
             return str(state.last_calculated_current)
         return "Not yet calculated"
 
@@ -247,7 +247,7 @@ class EVSELoadBalancerCoordinator:
         if not self._charger or self._charger.id not in self._power_allocator._chargers:
             return "Unknown"
         state = self._power_allocator._chargers[self._charger.id]
-        if state.last_applied_current:
+        if state.last_applied_current is not None:
             return str(state.last_applied_current)
         return "Not yet applied"
 

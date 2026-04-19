@@ -57,7 +57,7 @@ class DsmrMeter(Meter, HaDevice):
         )
 
         if current_state is not None:
-            return floor(current_state) if current_state else None
+            return floor(current_state) if current_state is not None else None
 
         active_power = self.get_active_phase_power(phase)
         voltage_state = self._get_entity_state_for_phase_sensor(
@@ -79,7 +79,7 @@ class DsmrMeter(Meter, HaDevice):
             )
             return None
         # convert kW to W in order to calculate the current
-        return floor((active_power * 1000) / voltage_state) if voltage_state else None
+        return floor((active_power * 1000) / voltage_state) if voltage_state is not None else None
 
     def get_active_phase_power(self, phase: Phase) -> float | None:
         """Return the active power on a given phase."""
