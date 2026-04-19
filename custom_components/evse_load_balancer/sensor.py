@@ -124,14 +124,6 @@ SENSORS: tuple[tuple[SensorEntity, SensorEntityDescription], ...] = (
         ),
     ),
     (
-        LoadBalancerSensor,
-        SensorEntityDescription(
-            key=get_callable_name(EVSELoadBalancerCoordinator.get_version_info),
-            translation_key="evse_version_info",
-            entity_registry_enabled_default=True,
-        ),
-    ),
-    (
         LoadBalancerPhaseSensor,
         SensorEntityDescription(
             key=SENSOR_KEY_AVAILABLE_CURRENT_L1,

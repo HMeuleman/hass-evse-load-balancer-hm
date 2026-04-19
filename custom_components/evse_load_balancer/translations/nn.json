@@ -90,9 +90,6 @@
             "evse_manual_override_detected": {
                 "name": "Manual override detected"
             },
-            "evse_version_info": {
-                "name": "Version Info"
-            },
             "evse_available_current_l1": {
                 "name": "Tilgjengeleg straum L1"
             },
