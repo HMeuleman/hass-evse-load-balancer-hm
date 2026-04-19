@@ -46,6 +46,7 @@ class EVSELoadBalancerCoordinator:
     # MODIFIED: Store as datetime object or None
     _last_check_timestamp: datetime | None = None
     _last_charger_update_time: int | None = None
+    _awaiting_charger_start_time: datetime | None = None
 
     def __init__(
         self,
@@ -197,6 +198,20 @@ class EVSELoadBalancerCoordinator:
         """Get the timestamp of the last check cycle."""
         return self._last_check_timestamp
 
+    @property
+    def get_current_charger_limits(self) -> str:
+        """Get the current charger limits as a string."""
+        limits = self._charger.get_current_limit()
+        if limits:
+            return str(limits)
+        return "Unknown"
+
+    @property
+    def get_current_input_method(self) -> str:
+        """Get the current input method used for available current."""
+        # For now, return a placeholder; can be enhanced to track from meter
+        return "DSMR Current/Power/Voltage Fallback"
+
     @callback
     def _execute_update_cycle(self, now: datetime) -> None:
         """Execute the main update cycle for load balancing."""
@@ -211,7 +226,18 @@ class EVSELoadBalancerCoordinator:
 
         # Run the actual charger update
         if not self._should_check_charger():
+            # If in awaiting charger state, set charger to max possible after a delay
+            if self._awaiting_charger_start_time is None:
+                self._awaiting_charger_start_time = now
+            elif (now - self._awaiting_charger_start_time).total_seconds() > 30:  # 30 seconds delay
+                max_limits = {phase: self.fuse_size for phase in self._available_phases}
+                current_limit = self._charger.get_current_limit()
+                if current_limit != max_limits:
+                    self._update_charger_settings(new_limits=max_limits, timestamp=now.timestamp())
+                    _LOGGER.debug("Set charger to max limits while awaiting charger: %s", max_limits)
             return
+        else:
+            self._awaiting_charger_start_time = None
 
         # Computes relative limit. Negative in case of overcurrent
         # and positive in case of availability

@@ -66,6 +66,12 @@
             "evse_last_check": {
                 "name": "Last check"
             },
+            "evse_current_charger_limits": {
+                "name": "Current charger limits"
+            },
+            "evse_current_input_method": {
+                "name": "Current input method"
+            },
             "evse_available_current_l1": {
                 "name": "Available current L1"
             },

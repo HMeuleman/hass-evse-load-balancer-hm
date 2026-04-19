@@ -60,6 +60,22 @@ SENSORS: tuple[tuple[SensorEntity, SensorEntityDescription], ...] = (
         ),
     ),
     (
+        LoadBalancerSensor,
+        SensorEntityDescription(
+            key=get_callable_name(EVSELoadBalancerCoordinator.get_current_charger_limits),
+            translation_key="evse_current_charger_limits",
+            entity_registry_enabled_default=False,
+        ),
+    ),
+    (
+        LoadBalancerSensor,
+        SensorEntityDescription(
+            key=get_callable_name(EVSELoadBalancerCoordinator.get_current_input_method),
+            translation_key="evse_current_input_method",
+            entity_registry_enabled_default=False,
+        ),
+    ),
+    (
         LoadBalancerPhaseSensor,
         SensorEntityDescription(
             key=SENSOR_KEY_AVAILABLE_CURRENT_L1,
