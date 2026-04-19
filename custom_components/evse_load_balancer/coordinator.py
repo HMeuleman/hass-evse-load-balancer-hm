@@ -259,6 +259,11 @@ class EVSELoadBalancerCoordinator:
         state = self._power_allocator._chargers[self._charger.id]
         return "Yes" if state.manual_override_detected else "No"
 
+    @property
+    def get_version_info(self) -> str:
+        """Get version info - for testing installation."""
+        return "EnergyLabs HM"
+
     @callback
     def _execute_update_cycle(self, now: datetime) -> None:
         """Execute the main update cycle for load balancing."""
