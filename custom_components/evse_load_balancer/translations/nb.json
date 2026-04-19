@@ -36,7 +36,11 @@
                 "title": "Innstillinger for EVSE Load Balancer",
                 "data": {
                     "charge_limit_hysteresis": "Hysterese (minutter)",
-                    "max_fuse_load_amps": "Maksimal sikringsbelastning (A)"
+                    "max_fuse_load_amps": "Maksimal sikringsbelastning (A)",
+                    "allow_temporary_overcurrent": "Allow temporary overcurrent"
+                },
+                "data_description": {
+                    "allow_temporary_overcurrent": "When enabled, tolerates brief power spikes using risk-based algorithm. Disable for contracts with peak billing or strict overcurrent restrictions."
                 },
                 "description": "Juster oppførselen til EVSE Load Balancer. For 'Maksimal sikringsbelastning' betyr verdien 0 ingen overstyring og hovedsikringens størrelse vil bli brukt."
             }
@@ -61,6 +65,33 @@
             },
             "evse_last_check": {
                 "name": "Sist kontrollert"
+            },
+            "evse_current_charger_limits": {
+                "name": "Current charger limits"
+            },
+            "evse_current_input_method": {
+                "name": "Current input method"
+            },
+            "evse_overcurrent_mode": {
+                "name": "Overcurrent mode"
+            },
+            "evse_trip_risk_threshold": {
+                "name": "Trip risk threshold"
+            },
+            "evse_cumulative_trip_risk": {
+                "name": "Cumulative trip risk per phase"
+            },
+            "evse_last_calculated_currents": {
+                "name": "Last calculated currents"
+            },
+            "evse_last_applied_currents": {
+                "name": "Last applied currents"
+            },
+            "evse_manual_override_detected": {
+                "name": "Manual override detected"
+            },
+            "evse_version_info": {
+                "name": "Version Info"
             },
             "evse_available_current_l1": {
                 "name": "Tilgjengelig strøm L1"

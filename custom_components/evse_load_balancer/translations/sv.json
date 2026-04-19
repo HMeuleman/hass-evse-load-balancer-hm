@@ -36,7 +36,11 @@
                 "title": "Inställningar för EVSE lastbalanserare",
                 "data": {
                     "charge_limit_hysteresis": "Hysteres (minuter)",
-                    "max_fuse_load_amps": "Maximal säkringsbelastning (A)"
+                    "max_fuse_load_amps": "Maximal säkringsbelastning (A)",
+                    "allow_temporary_overcurrent": "Allow temporary overcurrent"
+                },
+                "data_description": {
+                    "allow_temporary_overcurrent": "When enabled, tolerates brief power spikes using risk-based algorithm. Disable for contracts with peak billing or strict overcurrent restrictions."
                 },
                 "description": "Justera beteendet för EVSE lastbalanseraren. För 'Maximal säkringsbelastning' betyder värdet 0 ingen åsidosättning och huvudsäkringens storlek kommer att användas."
             }
@@ -61,6 +65,33 @@
             },
             "evse_last_check": {
                 "name": "Senast kontrollerad"
+            },
+            "evse_current_charger_limits": {
+                "name": "Current charger limits"
+            },
+            "evse_current_input_method": {
+                "name": "Current input method"
+            },
+            "evse_overcurrent_mode": {
+                "name": "Overcurrent mode"
+            },
+            "evse_trip_risk_threshold": {
+                "name": "Trip risk threshold"
+            },
+            "evse_cumulative_trip_risk": {
+                "name": "Cumulative trip risk per phase"
+            },
+            "evse_last_calculated_currents": {
+                "name": "Last calculated currents"
+            },
+            "evse_last_applied_currents": {
+                "name": "Last applied currents"
+            },
+            "evse_manual_override_detected": {
+                "name": "Manual override detected"
+            },
+            "evse_version_info": {
+                "name": "Version Info"
             },
             "evse_available_current_l1": {
                 "name": "Tillgänglig ström L1"
