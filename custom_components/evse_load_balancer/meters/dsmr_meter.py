@@ -66,10 +66,10 @@ class DsmrMeter(Meter, HaDevice):
             )
             return None
         
-        # If consumption is less than 10W, report 0A to avoid incorrect positive
+        # If consumption is less than 0.01 kW (10W), report 0A to avoid incorrect positive
         # current readings when solar is producing. The 25A grid limit applies
         # only to net consumption, which is effectively zero in this case.
-        if active_power < 10:
+        if active_power < 0.01:
             return 0
         
         current_state = self._get_entity_state_for_phase_sensor(
