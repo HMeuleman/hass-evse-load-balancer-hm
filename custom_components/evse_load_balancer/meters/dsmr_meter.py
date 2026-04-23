@@ -51,7 +51,27 @@ class DsmrMeter(Meter, HaDevice):
         self.refresh_entities()
 
     def get_active_phase_current(self, phase: Phase) -> int | None:
-        """Return the active current on a given phase."""
+        """Return the active current on a given phase.
+        
+        When solar panels are producing and consumption is near zero,
+        explicitly return 0 instead of relying on DSMR's often-inaccurate
+        current reading. The load balancer only cares about net consumption.
+        """
+        active_power = self.get_active_phase_power(phase)
+        
+        if active_power is None:
+            _LOGGER.warning(
+                "Missing power state for phase %s. Cannot determine current.",
+                phase,
+            )
+            return None
+        
+        # If consumption is less than 10W, report 0A to avoid incorrect positive
+        # current readings when solar is producing. The 25A grid limit applies
+        # only to net consumption, which is effectively zero in this case.
+        if active_power < 10:
+            return 0
+        
         current_state = self._get_entity_state_for_phase_sensor(
             phase, cf.CONF_PHASE_SENSOR_CURRENT
         )
@@ -59,7 +79,6 @@ class DsmrMeter(Meter, HaDevice):
         if current_state is not None:
             return floor(current_state) if current_state is not None else None
 
-        active_power = self.get_active_phase_power(phase)
         voltage_state = self._get_entity_state_for_phase_sensor(
             phase, cf.CONF_PHASE_SENSOR_VOLTAGE
         )
@@ -67,17 +86,7 @@ class DsmrMeter(Meter, HaDevice):
         if voltage_state is None:
             voltage_state = 230
 
-        if active_power is None:
-            _LOGGER.warning(
-                (
-                    "Missing states for one of phase %s: active_power: %s, ",
-                    "voltage: %s. Are the entities enabled?",
-                ),
-                phase,
-                active_power,
-                voltage_state,
-            )
-            return None
+        # Fallback: calculate current from power and voltage
         # convert kW to W in order to calculate the current
         return floor((active_power * 1000) / voltage_state) if voltage_state is not None else None
 
