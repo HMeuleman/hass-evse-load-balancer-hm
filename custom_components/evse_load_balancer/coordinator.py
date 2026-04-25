@@ -209,7 +209,14 @@ class EVSELoadBalancerCoordinator:
 
     @property
     def get_hysteresis_timeout(self) -> int | None:
-        """Get the remaining hysteresis timeout in seconds."""
+        """Get the remaining hysteresis timeout in seconds.
+        
+        Returns None if charger is not being monitored or if no hysteresis is active.
+        """
+        # Hysteresis only applies when charger is actively being monitored
+        if not self._should_check_charger():
+            return None
+        
         last_update_time = self._last_charger_update_time
         if last_update_time is None:
             return None
