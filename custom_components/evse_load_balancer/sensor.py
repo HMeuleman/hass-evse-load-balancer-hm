@@ -94,6 +94,16 @@ SENSORS: tuple[tuple[SensorEntity, SensorEntityDescription], ...] = (
     (
         LoadBalancerSensor,
         SensorEntityDescription(
+            key=get_callable_name(EVSELoadBalancerCoordinator.get_hysteresis_timeout),
+            translation_key="evse_hysteresis_timeout",
+            device_class=SensorDeviceClass.DURATION,
+            native_unit_of_measurement="seconds",
+            entity_registry_enabled_default=False,
+        ),
+    ),
+    (
+        LoadBalancerSensor,
+        SensorEntityDescription(
             key=get_callable_name(EVSELoadBalancerCoordinator.get_cumulative_trip_risk),
             translation_key="evse_cumulative_trip_risk",
             entity_registry_enabled_default=False,

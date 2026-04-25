@@ -78,6 +78,9 @@
             "evse_trip_risk_threshold": {
                 "name": "Trip risk threshold"
             },
+            "evse_hysteresis_timeout": {
+                "name": "Hysteresis timeout"
+            },
             "evse_cumulative_trip_risk": {
                 "name": "Cumulative trip risk per phase"
             },

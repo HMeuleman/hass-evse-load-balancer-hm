@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta  # Ensure datetime is imported
 from functools import cached_property
 from math import floor
+from time import time
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -205,6 +206,28 @@ class EVSELoadBalancerCoordinator:
         if limits is not None:
             return str(limits)
         return "Unknown"
+
+    @property
+    def get_hysteresis_timeout(self) -> int | None:
+        """Get the remaining hysteresis timeout in seconds."""
+        last_update_time = self._last_charger_update_time
+        if last_update_time is None:
+            return None
+
+        current_limits = self._charger.get_current_limit()
+        if current_limits is None:
+            return None
+
+        max_limits = {phase: self.fuse_size for phase in self._available_phases}
+        if current_limits == max_limits:
+            return None
+
+        hysteresis_minutes = of.EvseLoadBalancerOptionsFlow.get_option_value(
+            self.config_entry, of.OPTION_CHARGE_LIMIT_HYSTERESIS
+        )
+        hysteresis_seconds = int(hysteresis_minutes * 60)
+        remaining = hysteresis_seconds - (int(time()) - last_update_time)
+        return remaining if remaining > 0 else None
 
     @property
     def get_current_input_method(self) -> str:
