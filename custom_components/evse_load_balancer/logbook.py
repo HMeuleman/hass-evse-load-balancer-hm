@@ -36,8 +36,8 @@ def async_describe_events(
         if action == EVENT_ACTION_NEW_CHARGER_LIMITS:
             new_limits: dict[Phase, int] = data.get(EVENT_ATTR_NEW_LIMITS, {})
             message = (
-                "charger limits set to: ",
-                ", ".join(f"{phase}: {limit}A" for phase, limit in new_limits.items()),
+                "charger limits set to: "
+                + ", ".join(f"{phase}: {limit}A" for phase, limit in new_limits.items())
             )
         else:
             msg = f"Unknown action: {action}"

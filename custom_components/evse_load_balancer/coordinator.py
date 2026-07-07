@@ -64,6 +64,7 @@ class EVSELoadBalancerCoordinator:
 
         self._meter: Meter = meter
         self._charger: Charger = charger
+        self._last_emitted_charger_limits: dict[Phase, int] | None = None
 
     async def async_setup(self) -> None:
         """Set up the coordinator and its managed components."""
@@ -430,8 +431,16 @@ class EVSELoadBalancerCoordinator:
     def _update_charger_settings(
         self, new_limits: dict[Phase, int], timestamp: int
     ) -> None:
+        if self._last_emitted_charger_limits == new_limits:
+            _LOGGER.debug(
+                "Duplicate charger limits update suppressed: %s",
+                new_limits,
+            )
+            return
+
         _LOGGER.debug("New charger settings: %s", new_limits)
         self._last_charger_update_time = timestamp
+        self._last_emitted_charger_limits = dict(new_limits)
         self._emit_charger_event(EVENT_ACTION_NEW_CHARGER_LIMITS, new_limits)
         self.hass.async_create_task(self._charger.set_current_limit(new_limits))
 
