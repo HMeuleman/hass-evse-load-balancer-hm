@@ -390,6 +390,17 @@ class EVSELoadBalancerCoordinator:
             )
             return False
 
+        # If the requested limits are identical to the current limits,
+        # do not trigger an update or log entry.
+        if new_settings == current_limits:
+            _LOGGER.debug(
+                "Charger settings are unchanged, no update required. "
+                "Current settings: %s, requested settings: %s",
+                current_limits,
+                new_settings,
+            )
+            return False
+
         # Allow immediate decreases for safety (overcurrent protection)
         if any(new_settings[p] < current_limits[p] for p in new_settings):
             _LOGGER.debug(

@@ -330,6 +330,24 @@ def test_no_update_when_charger_shouldnt_be_checked(coordinator):
     coordinator._charger.set_current_limit.assert_not_called()
 
 
+def test_no_update_when_limits_are_unchanged(coordinator):
+    """Test no charger event is fired when limits remain unchanged."""
+    # Make the current charger limits match the computed allocation
+    unchanged_limits = {
+        Phase.L1: 14,
+        Phase.L2: 16,
+        Phase.L3: 16,
+    }
+    coordinator._charger.set_current_limits(unchanged_limits)
+
+    # Execute update cycle
+    coordinator._execute_update_cycle(datetime.now())
+
+    # Verify no update was applied and no event fired
+    coordinator._charger.set_current_limit.assert_not_called()
+    coordinator.hass.bus.async_fire.assert_not_called()
+
+
 def test_no_update_too_frequent(coordinator):
     """Test that no update happens when last update was too recent."""
     # Set recent update time
