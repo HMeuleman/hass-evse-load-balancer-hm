@@ -1,4 +1,4 @@
-[![easee_hass](https://img.shields.io/github/release/HMeuleman/hass-evse-load-balancer.svg?1)](https://github.com/HMeuleman/hass-evse-load-balancer) ![Validate with hassfest](https://github.com/HMeuleman/hass-evse-load-balancer/workflows/Validate%20with%20Hassfest%20and%20HACS/badge.svg) ![Maintenance](https://img.shields.io/maintenance/yes/2025.svg) [![Easee_downloads](https://img.shields.io/github/downloads/HMeuleman/hass-evse-load-balancer/total)](https://github.com/HMeulemann/hass-evse-load-balancer) [![easee_hass_downloads](https://img.shields.io/github/downloads/HMeuleman/hass-evse-load-balancer/latest/total)](https://github.com/HMeuleman/hass-evse-load-balancer)
+[![easee_hass](https://img.shields.io/github/release/HMeuleman/hass-evse-load-balancer.svg?1)](https://github.com/HMeuleman/hass-evse-load-balancer) ![Maintenance](https://img.shields.io/maintenance/yes/2026.svg) [![Easee_downloads](https://img.shields.io/github/downloads/HMeuleman/hass-evse-load-balancer/total)](https://github.com/HMeulemann/hass-evse-load-balancer) [![easee_hass_downloads](https://img.shields.io/github/downloads/HMeuleman/hass-evse-load-balancer/latest/total)](https://github.com/HMeuleman/hass-evse-load-balancer)
 
 # EVSE Load Balancer for Home Assistant 🚗⚡️
 
@@ -7,7 +7,7 @@
 - No more need of custom automation scripts trying to protect your main fuse
 - No more additional hardware on your P1 port.
 
-This is a modified version of the repo by Dirk Groenen. Changes were needed because my P1 meter does not support all required sensors (Voltage). There were also some changes made to timeouts (faster switch to higher current) and debug sensors were added. My setup is P1 meter (connected by AURT to my HA Rpi) and charger of type Amina S Zigbee.
+This is a modified version of the repo by Dirk Groenen. Changes were needed because my P1 meter does not support all required sensors (Voltage). There were also some changes made to timeouts (faster switch to higher current) and debug sensors were added. My setup is P1 meter (connected by UART to my HA Rpi) and charger of type Amina S Zigbee.
 
 ---
 
