@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 OPTION_CHARGE_LIMIT_HYSTERESIS = "charge_limit_hysteresis"
 OPTION_MAX_FUSE_LOAD_AMPS = "max_fuse_load_amps"
+OPTION_MAX_CHARGER_CURRENT = "max_charger_current"
 OPTION_ALLOW_TEMPORARY_OVERCURRENT = "allow_temporary_overcurrent"
 
 DEFAULT_VALUES: dict[str, Any] = {
@@ -51,6 +52,12 @@ class EvseLoadBalancerOptionsFlow(OptionsFlow):
     def _options_schema(self) -> vol.Schema:
         """Define the schema for the options flow."""
         options_values = self.config_entry.options
+        max_charger_current_key = vol.Optional(OPTION_MAX_CHARGER_CURRENT)
+        if OPTION_MAX_CHARGER_CURRENT in options_values:
+            max_charger_current_key = vol.Optional(
+                OPTION_MAX_CHARGER_CURRENT,
+                default=options_values[OPTION_MAX_CHARGER_CURRENT],
+            )
 
         return vol.Schema(
             {
@@ -79,6 +86,15 @@ class EvseLoadBalancerOptionsFlow(OptionsFlow):
                 ): NumberSelector(
                     {
                         "min": 1,
+                        "step": 1,
+                        "mode": "box",
+                        "unit_of_measurement": "A",
+                    }
+                ),
+                max_charger_current_key: NumberSelector(
+                    {
+                        "min": 1,
+                        "max": 32,
                         "step": 1,
                         "mode": "box",
                         "unit_of_measurement": "A",

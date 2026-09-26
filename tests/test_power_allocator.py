@@ -163,6 +163,43 @@ def test_update_allocation_overcurrent(power_allocator: PowerAllocator):
     }
 
 
+def test_manual_max_current_caps_charger(power_allocator: PowerAllocator) -> None:
+    """A configured ceiling reduces a charger already set above that value."""
+    charger = MockCharger(initial_current=16, charger_id="charger1")
+    charger.set_can_charge(True)
+    power_allocator.add_charger(charger, max_current=10)
+
+    result = power_allocator.update_allocation(dict.fromkeys(Phase, 6))
+
+    assert result["charger1"] == dict.fromkeys(Phase, 10)
+
+
+def test_manual_max_current_keeps_overcurrent_balancing(
+    power_allocator: PowerAllocator,
+) -> None:
+    """Balancing can continue to reduce limits below the manual ceiling."""
+    charger = MockCharger(initial_current=10, charger_id="charger1")
+    charger.set_can_charge(True)
+    power_allocator.add_charger(charger, max_current=10)
+
+    result = power_allocator.update_allocation(dict.fromkeys(Phase, -4))
+
+    assert result["charger1"] == dict.fromkeys(Phase, 6)
+
+
+def test_manual_max_current_is_recovery_ceiling(
+    power_allocator: PowerAllocator,
+) -> None:
+    """A charger below the cap can recover, but not above the cap."""
+    charger = MockCharger(initial_current=6, max_current=16, charger_id="charger1")
+    charger.set_can_charge(True)
+    power_allocator.add_charger(charger, max_current=10)
+
+    result = power_allocator.update_allocation(dict.fromkeys(Phase, 4))
+
+    assert result["charger1"] == dict.fromkeys(Phase, 10)
+
+
 def test_update_allocation_recovery(power_allocator: PowerAllocator):
     """Test update_allocation method with recovery situation."""
     # Create and add a charger that's been reduced

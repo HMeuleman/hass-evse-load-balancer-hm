@@ -1,7 +1,10 @@
 """Test the Simple Integration config flow."""
 
+from types import SimpleNamespace
+
 from custom_components.evse_load_balancer.options_flow import (
     OPTION_MAX_FUSE_LOAD_AMPS,
+    OPTION_MAX_CHARGER_CURRENT,
     OPTION_CHARGE_LIMIT_HYSTERESIS,
     EvseLoadBalancerOptionsFlow,
 )
@@ -39,6 +42,34 @@ def test_get_option_value_uses_existing_option(mock_config_entry_with_options):
         mock_config_entry_with_options, OPTION_MAX_FUSE_LOAD_AMPS
     )
     assert result == 30  # Should use the explicitly set option
+
+
+def test_max_charger_current_is_optional_by_default(
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """The manual EVSE ceiling defaults to no additional cap."""
+    assert (
+        EvseLoadBalancerOptionsFlow.get_option_value(
+            mock_config_entry, OPTION_MAX_CHARGER_CURRENT
+        )
+        is None
+    )
+
+
+def test_options_schema_includes_manual_charger_current(
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """The options form exposes an optional manual EVSE current ceiling."""
+    flow_context = SimpleNamespace(config_entry=mock_config_entry)
+    schema = EvseLoadBalancerOptionsFlow._options_schema(flow_context)
+
+    max_current_selector = next(
+        selector
+        for key, selector in schema.schema.items()
+        if key.schema == OPTION_MAX_CHARGER_CURRENT
+    )
+    assert max_current_selector.config["min"] == 1
+    assert max_current_selector.config["max"] == 32
 
 
 @pytest.mark.asyncio

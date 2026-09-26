@@ -13,9 +13,10 @@ _LOGGER = logging.getLogger(__name__)
 class ChargerState:
     """Tracks internal allocation state for a single charger."""
 
-    def __init__(self, charger: Charger) -> None:
+    def __init__(self, charger: Charger, max_current: int | None = None) -> None:
         """Initialize charger state."""
         self.charger = charger
+        self.max_current = max_current
         self.requested_current: dict[Phase, int] | None = None
         self.last_calculated_current: dict[Phase, int] | None = None
         self.last_applied_current: dict[Phase, int] | None = None
@@ -32,7 +33,12 @@ class ChargerState:
 
         current_limits = self.charger.get_current_limit()
         if current_limits:
-            self.requested_current = dict(current_limits)
+            requested_limits = current_limits
+            if self.max_current is not None:
+                requested_limits = (
+                    self.charger.get_max_current_limit() or current_limits
+                )
+            self.requested_current = self.cap_current_limits(requested_limits)
             self.last_applied_current = dict(current_limits)
             self._active_session = self.charger.can_charge()
             _LOGGER.info("Charger initialized with limits: %s", current_limits)
@@ -41,6 +47,15 @@ class ChargerState:
 
         _LOGGER.warning("Could not initialize charger - no current limits available")
         return False
+
+    def cap_current_limits(self, current_limits: dict[Phase, int]) -> dict[Phase, int]:
+        """Apply the configured EVSE current ceiling to phase limits."""
+        if self.max_current is None:
+            return dict(current_limits)
+        return {
+            phase: min(current, self.max_current)
+            for phase, current in current_limits.items()
+        }
 
     def detect_manual_override(self) -> None:
         """Detect and take care of manual override implications."""
@@ -54,7 +69,7 @@ class ChargerState:
         if is_charging and not self._active_session:
             max_limits = self.charger.get_max_current_limit()
             if max_limits:
-                self.requested_current = dict(max_limits)
+                self.requested_current = self.cap_current_limits(max_limits)
                 _LOGGER.info(
                     "New charging session detected for %s, resetting to maximum: %s",
                     self.charger.id,
@@ -71,7 +86,7 @@ class ChargerState:
                 for phase in current_setting
             )
         ):
-            self.requested_current = dict(current_setting)
+            self.requested_current = self.cap_current_limits(current_setting)
             self.last_applied_current = dict(current_setting)
             self.manual_override_detected = True
             _LOGGER.info(
@@ -111,7 +126,7 @@ class PowerAllocator:
         """Initialize the power allocator."""
         self._chargers: dict[str, ChargerState] = {}
 
-    def add_charger(self, charger: Charger) -> bool:
+    def add_charger(self, charger: Charger, max_current: int | None = None) -> bool:
         """
         Add a charger to be managed by the allocator.
 
@@ -122,7 +137,7 @@ class PowerAllocator:
             _LOGGER.warning("Charger %s already exists in PowerAllocator", charger_id)
             return False
 
-        charger_state = ChargerState(charger)
+        charger_state = ChargerState(charger, max_current)
         self._chargers[charger_id] = charger_state
         _LOGGER.info("Added charger %s to PowerAllocator", charger_id)
 
@@ -178,6 +193,19 @@ class PowerAllocator:
 
         # Allocate current based on strategy
         allocated_currents = self._allocate_current(available_currents)
+
+        # Enforce a manual ceiling even when available current is positive.
+        for charger_id, state in self._active_chargers.items():
+            if state.max_current is None:
+                continue
+            current_setting = state.get_current_limit()
+            if not current_setting:
+                continue
+
+            candidate = allocated_currents.get(charger_id, current_setting)
+            capped_limits = state.cap_current_limits(candidate)
+            if charger_id in allocated_currents or capped_limits != current_setting:
+                allocated_currents[charger_id] = capped_limits
 
         # Create result dictionary for chargers that need updating
         result = {}

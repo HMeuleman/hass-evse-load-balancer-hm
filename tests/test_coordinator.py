@@ -1,5 +1,6 @@
 """Tests for the EVSELoadBalancerCoordinator."""
 
+import asyncio
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
@@ -239,6 +240,60 @@ def test_sensor_updates(coordinator):
     # Check that async_write_ha_state was called on each sensor
     for sensor in coordinator._sensors:
         assert sensor.async_write_ha_state.called
+
+
+def test_async_setup_passes_manual_max_current(
+    coordinator: EVSELoadBalancerCoordinator,
+) -> None:
+    """Pass the configured EVSE ceiling to the power allocator."""
+
+    def get_option_value(_entry: object, key: str) -> int | bool | None:
+        if key == of.OPTION_MAX_CHARGER_CURRENT:
+            return 10
+        return of.DEFAULT_VALUES.get(key)
+
+    with (
+        patch(
+            "custom_components.evse_load_balancer.coordinator.async_track_time_interval",
+            return_value=lambda: None,
+        ),
+        patch.object(
+            of.EvseLoadBalancerOptionsFlow,
+            "get_option_value",
+            side_effect=get_option_value,
+        ),
+    ):
+        asyncio.run(coordinator.async_setup())
+
+    charger_state = coordinator._power_allocator._chargers[coordinator._charger.id]
+    assert charger_state.max_current == 10
+
+
+def test_awaiting_charger_respects_manual_max_current(
+    coordinator: EVSELoadBalancerCoordinator,
+) -> None:
+    """The awaiting-charger path must not exceed the configured ceiling."""
+    now = datetime.now()
+    coordinator._power_allocator.should_monitor.return_value = False
+    coordinator._awaiting_charger_start_time = now - timedelta(seconds=31)
+    coordinator._update_charger_settings = MagicMock()
+
+    def get_option_value(_entry: object, key: str) -> int | bool | None:
+        if key == of.OPTION_MAX_CHARGER_CURRENT:
+            return 10
+        return of.DEFAULT_VALUES.get(key)
+
+    with patch.object(
+        of.EvseLoadBalancerOptionsFlow,
+        "get_option_value",
+        side_effect=get_option_value,
+    ):
+        coordinator._execute_update_cycle(now)
+
+    coordinator._update_charger_settings.assert_called_once_with(
+        new_limits=dict.fromkeys(Phase, 10),
+        timestamp=now.timestamp(),
+    )
 
 
 def test_charger_allocation(coordinator):

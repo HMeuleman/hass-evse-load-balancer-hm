@@ -37,9 +37,11 @@
                 "data": {
                     "charge_limit_hysteresis": "Hysteresis (Minutes)",
                     "max_fuse_load_amps": "Max Fuse Load Override (A)",
+                    "max_charger_current": "Max EVSE Current (A)",
                     "allow_temporary_overcurrent": "Allow temporary overcurrent"
                 },
                 "data_description": {
+                    "max_charger_current": "Optional current ceiling for this EVSE. Leave empty to use the charger's configured limit.",
                     "allow_temporary_overcurrent": "When enabled, tolerates brief power spikes using risk-based algorithm. Disable for contracts with peak billing or strict overcurrent restrictions."
                 },
                 "description": "Adjust the behavior of the EVSE Load Balancer. For 'Max Fuse Load Override', a value of 0 means no override and the main fuse size will be used."

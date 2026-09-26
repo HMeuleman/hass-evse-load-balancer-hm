@@ -97,7 +97,10 @@ class EVSELoadBalancerCoordinator:
         )
 
         self._power_allocator = PowerAllocator()
-        self._power_allocator.add_charger(charger=self._charger)
+        self._power_allocator.add_charger(
+            charger=self._charger,
+            max_current=self._configured_max_charger_current,
+        )
 
     async def async_unload(self) -> None:
         """Unload the coordinator and its managed components."""
@@ -156,6 +159,14 @@ class EVSELoadBalancerCoordinator:
         return int(
             options_fuse_amps if options_fuse_amps is not None else config_fuse_amps
         )
+
+    @property
+    def _configured_max_charger_current(self) -> int | None:
+        """Get the optional manual current ceiling for the EVSE."""
+        max_current = of.EvseLoadBalancerOptionsFlow.get_option_value(
+            self.config_entry, of.OPTION_MAX_CHARGER_CURRENT
+        )
+        return int(max_current) if max_current is not None else None
 
     def get_available_current_for_phase(self, phase: Phase) -> int | None:
         """Get the available current for a given phase."""
@@ -308,7 +319,13 @@ class EVSELoadBalancerCoordinator:
             if self._awaiting_charger_start_time is None:
                 self._awaiting_charger_start_time = now
             elif (now - self._awaiting_charger_start_time).total_seconds() > 30:  # 30 seconds delay
-                max_limits = {phase: self.fuse_size for phase in self._available_phases}
+                max_current = self._configured_max_charger_current
+                maximum_limit = (
+                    min(self.fuse_size, max_current)
+                    if max_current is not None
+                    else self.fuse_size
+                )
+                max_limits = dict.fromkeys(self._available_phases, maximum_limit)
                 current_limit = self._charger.get_current_limit()
                 if current_limit != max_limits:
                     self._update_charger_settings(new_limits=max_limits, timestamp=now.timestamp())
