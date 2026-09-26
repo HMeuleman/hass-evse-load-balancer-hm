@@ -56,20 +56,14 @@ def test_max_charger_current_is_optional_by_default(
     )
 
 
-def test_options_schema_includes_manual_charger_current(
+def test_manual_charger_current_is_not_an_options_field(
     mock_config_entry: MockConfigEntry,
 ) -> None:
-    """The options form exposes an optional manual EVSE current ceiling."""
+    """The manual EVSE current ceiling is controlled by its number entity."""
     flow_context = SimpleNamespace(config_entry=mock_config_entry)
     schema = EvseLoadBalancerOptionsFlow._options_schema(flow_context)
 
-    max_current_selector = next(
-        selector
-        for key, selector in schema.schema.items()
-        if key.schema == OPTION_MAX_CHARGER_CURRENT
-    )
-    assert max_current_selector.config["min"] == 1
-    assert max_current_selector.config["max"] == 32
+    assert all(key.schema != OPTION_MAX_CHARGER_CURRENT for key in schema.schema)
 
 
 @pytest.mark.asyncio

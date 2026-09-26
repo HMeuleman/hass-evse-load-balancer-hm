@@ -16,6 +16,7 @@ from .meters import Meter, meter_factory
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [
+    Platform.NUMBER,
     Platform.SENSOR,
 ]
 

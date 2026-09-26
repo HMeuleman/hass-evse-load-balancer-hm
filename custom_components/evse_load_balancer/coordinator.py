@@ -65,6 +65,10 @@ class EVSELoadBalancerCoordinator:
         self._meter: Meter = meter
         self._charger: Charger = charger
         self._last_emitted_charger_limits: dict[Phase, int] | None = None
+        configured_max_current = self._configured_max_charger_current
+        self.max_charger_current = (
+            configured_max_current if configured_max_current is not None else 32
+        )
 
     async def async_setup(self) -> None:
         """Set up the coordinator and its managed components."""
@@ -97,9 +101,12 @@ class EVSELoadBalancerCoordinator:
         )
 
         self._power_allocator = PowerAllocator()
+        configured_max_current = self._configured_max_charger_current
+        if configured_max_current is not None:
+            self.max_charger_current = configured_max_current
         self._power_allocator.add_charger(
             charger=self._charger,
-            max_current=self._configured_max_charger_current,
+            max_current=self.max_charger_current,
         )
 
     async def async_unload(self) -> None:
@@ -167,6 +174,22 @@ class EVSELoadBalancerCoordinator:
             self.config_entry, of.OPTION_MAX_CHARGER_CURRENT
         )
         return int(max_current) if max_current is not None else None
+
+    def set_max_charger_current(self, max_current: int) -> None:
+        """Update the manual EVSE ceiling used by the power allocator."""
+        self.max_charger_current = max_current
+        charger_state = self._power_allocator._chargers.get(self._charger.id)
+        if charger_state is None:
+            return
+
+        charger_state.max_current = max_current
+        requested_limits = (
+            self._charger.get_max_current_limit() or charger_state.requested_current
+        )
+        if requested_limits:
+            charger_state.requested_current = charger_state.cap_current_limits(
+                requested_limits
+            )
 
     def get_available_current_for_phase(self, phase: Phase) -> int | None:
         """Get the available current for a given phase."""
@@ -319,7 +342,7 @@ class EVSELoadBalancerCoordinator:
             if self._awaiting_charger_start_time is None:
                 self._awaiting_charger_start_time = now
             elif (now - self._awaiting_charger_start_time).total_seconds() > 30:  # 30 seconds delay
-                max_current = self._configured_max_charger_current
+                max_current = self.max_charger_current
                 maximum_limit = (
                     min(self.fuse_size, max_current)
                     if max_current is not None

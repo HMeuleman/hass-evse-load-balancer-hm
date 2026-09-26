@@ -19,6 +19,7 @@ from custom_components.evse_load_balancer.coordinator import (
     EVSELoadBalancerCoordinator,
     MIN_CHARGER_UPDATE_DELAY,
 )
+from custom_components.evse_load_balancer.power_allocator import PowerAllocator
 from .helpers.mock_charger import MockCharger
 from custom_components.evse_load_balancer import options_flow as of
 from custom_components.evse_load_balancer import config_flow as cf
@@ -269,26 +270,35 @@ def test_async_setup_passes_manual_max_current(
     assert charger_state.max_current == 10
 
 
+def test_runtime_max_current_update_changes_allocator_ceiling(
+    coordinator: EVSELoadBalancerCoordinator,
+) -> None:
+    """A number entity change updates the live allocator state."""
+    coordinator._power_allocator = PowerAllocator()
+    coordinator._power_allocator.add_charger(
+        charger=coordinator._charger,
+        max_current=32,
+    )
+    charger_state = coordinator._power_allocator._chargers[coordinator._charger.id]
+    assert charger_state.initialize()
+
+    coordinator.set_max_charger_current(10)
+
+    assert charger_state.max_current == 10
+    assert charger_state.requested_current == dict.fromkeys(Phase, 10)
+
+
 def test_awaiting_charger_respects_manual_max_current(
     coordinator: EVSELoadBalancerCoordinator,
 ) -> None:
     """The awaiting-charger path must not exceed the configured ceiling."""
     now = datetime.now()
     coordinator._power_allocator.should_monitor.return_value = False
+    coordinator.max_charger_current = 10
     coordinator._awaiting_charger_start_time = now - timedelta(seconds=31)
     coordinator._update_charger_settings = MagicMock()
 
-    def get_option_value(_entry: object, key: str) -> int | bool | None:
-        if key == of.OPTION_MAX_CHARGER_CURRENT:
-            return 10
-        return of.DEFAULT_VALUES.get(key)
-
-    with patch.object(
-        of.EvseLoadBalancerOptionsFlow,
-        "get_option_value",
-        side_effect=get_option_value,
-    ):
-        coordinator._execute_update_cycle(now)
+    coordinator._execute_update_cycle(now)
 
     coordinator._update_charger_settings.assert_called_once_with(
         new_limits=dict.fromkeys(Phase, 10),

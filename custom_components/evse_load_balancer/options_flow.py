@@ -52,13 +52,6 @@ class EvseLoadBalancerOptionsFlow(OptionsFlow):
     def _options_schema(self) -> vol.Schema:
         """Define the schema for the options flow."""
         options_values = self.config_entry.options
-        max_charger_current_key = vol.Optional(OPTION_MAX_CHARGER_CURRENT)
-        if OPTION_MAX_CHARGER_CURRENT in options_values:
-            max_charger_current_key = vol.Optional(
-                OPTION_MAX_CHARGER_CURRENT,
-                default=options_values[OPTION_MAX_CHARGER_CURRENT],
-            )
-
         return vol.Schema(
             {
                 vol.Required(
@@ -86,15 +79,6 @@ class EvseLoadBalancerOptionsFlow(OptionsFlow):
                 ): NumberSelector(
                     {
                         "min": 1,
-                        "step": 1,
-                        "mode": "box",
-                        "unit_of_measurement": "A",
-                    }
-                ),
-                max_charger_current_key: NumberSelector(
-                    {
-                        "min": 1,
-                        "max": 32,
                         "step": 1,
                         "mode": "box",
                         "unit_of_measurement": "A",
