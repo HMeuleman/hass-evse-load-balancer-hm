@@ -1,11 +1,9 @@
 """Tests for the EVSELoadBalancerCoordinator."""
 
 from datetime import datetime, timedelta
-from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
-from homeassistant.components.sensor import SensorEntityDescription
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.evse_load_balancer.const import (
@@ -20,7 +18,6 @@ from custom_components.evse_load_balancer.coordinator import (
     EVSELoadBalancerCoordinator,
     MIN_CHARGER_UPDATE_DELAY,
 )
-from custom_components.evse_load_balancer.load_balancer_sensor import LoadBalancerSensor
 from .helpers.mock_charger import MockCharger
 from custom_components.evse_load_balancer import options_flow as of
 from custom_components.evse_load_balancer import config_flow as cf
@@ -242,22 +239,6 @@ def test_sensor_updates(coordinator):
     # Check that async_write_ha_state was called on each sensor
     for sensor in coordinator._sensors:
         assert sensor.async_write_ha_state.called
-
-
-def test_last_determined_charge_limit_sensor_returns_value(coordinator):
-    """The diagnostic sensor should expose the determined amps, not a method."""
-    coordinator._power_allocator._chargers = {
-        TEST_CHARGER_ID: SimpleNamespace(
-            last_calculated_current={Phase.L1: 14, Phase.L2: 16, Phase.L3: 16},
-            last_applied_current=None,
-        )
-    }
-    sensor = LoadBalancerSensor(
-        coordinator,
-        SensorEntityDescription(key="get_last_determined_charge_limit"),
-    )
-
-    assert sensor.native_value == 14
 
 
 def test_charger_allocation(coordinator):

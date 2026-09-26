@@ -128,17 +128,6 @@ SENSORS: tuple[tuple[SensorEntity, SensorEntityDescription], ...] = (
     (
         LoadBalancerSensor,
         SensorEntityDescription(
-            key=get_callable_name(EVSELoadBalancerCoordinator.get_last_determined_charge_limit),
-            translation_key="evse_last_determined_charge_limit",
-            device_class=SensorDeviceClass.CURRENT,
-            native_unit_of_measurement="A",
-            suggested_display_precision=0,
-            entity_registry_enabled_default=True,
-        ),
-    ),
-    (
-        LoadBalancerSensor,
-        SensorEntityDescription(
             key=get_callable_name(EVSELoadBalancerCoordinator.get_manual_override_detected),
             translation_key="evse_manual_override_detected",
             entity_registry_enabled_default=False,

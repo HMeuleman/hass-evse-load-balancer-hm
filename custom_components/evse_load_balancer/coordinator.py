@@ -283,28 +283,6 @@ class EVSELoadBalancerCoordinator:
         return "Not yet applied"
 
     @property
-    def get_last_determined_charge_limit(self) -> int | str:
-        """Return the last determined charge limit in amps (single value).
-
-        For chargers that synchronize phase limits this returns the per-phase
-        value (minimum across phases). For chargers with independent phase
-        limits this returns the minimum phase limit as a conservative single
-        value.
-        """
-        if not self._charger or self._charger.id not in self._power_allocator._chargers:
-            return "Unknown"
-        state = self._power_allocator._chargers[self._charger.id]
-        currents = state.last_calculated_current or state.last_applied_current
-        if not currents:
-            return "Unknown"
-
-        # Use a conservative single-phase representation (minimum across phases)
-        try:
-            return min(currents.values())
-        except Exception:
-            return "Unknown"
-
-    @property
     def get_manual_override_detected(self) -> str:
         """Check if a manual override was detected."""
         if not self._charger or self._charger.id not in self._power_allocator._chargers:
