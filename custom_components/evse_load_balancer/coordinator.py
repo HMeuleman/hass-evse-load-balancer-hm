@@ -282,6 +282,7 @@ class EVSELoadBalancerCoordinator:
             return str(state.last_applied_current)
         return "Not yet applied"
 
+    @property
     def get_last_determined_charge_limit(self) -> int | str:
         """Return the last determined charge limit in amps (single value).
 
